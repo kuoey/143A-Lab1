@@ -11,6 +11,8 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include <stdint.h>
+#include <inttypes.h>
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -27,7 +29,7 @@ static struct list ready_list;
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
-
+static struct list sleep_list;
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -92,12 +94,35 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&sleep_list);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+}
+void wakeup()
+{
+  struct thread *node = list_entry(list_begin(&sleep_list),struct thread,elem);
+  //&& (ticks >= node->wakeup_time)
+  //printf("node %i",node->threadID);
+  
+  while(node != NULL)
+  {
+    node = list_entry(list_pop_front(&sleep_list),struct thread,elem);
+
+    thread_unblock(node);
+
+    // MODIFY PRIORITY: yield on return if higher priority thread is unblocked 
+    //if(node->threadID->priority > thread_current()->priority)
+    //  intr_yield_on_return ();
+
+    palloc_free_page(node);
+    //free(node);
+
+    node = list_entry(list_begin(&sleep_list),struct thread,elem);
+  }
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -147,6 +172,34 @@ thread_print_stats (void)
           idle_ticks, kernel_ticks, user_ticks);
 }
 
+void
+thread_helper(int64_t ticks){
+  if(ticks > 0)
+  {
+    ASSERT (intr_get_level () == INTR_ON);
+    
+    struct thread *cur = thread_current ();
+    //int64_t uptime = timer_ticks () + ticks;
+    cur->wakeup = ticks;
+    //struct sleeping_threads *node = malloc(sizeof(struct sleeping_threads));
+    
+    //struct sleeping_threads *node = palloc_get_page (PAL_ZERO);
+    //printf("UPTIME %i\n",uptime);
+    ASSERT(cur != idle_thread);
+    enum intr_level old_level;
+
+    old_level = intr_disable ();
+    //printf("AGHHHHHHHHHHH\n");
+    list_push_back(&sleep_list,&cur->elem);
+    
+    
+    printf("ihi\n");
+    thread_block();
+    intr_set_level (old_level);
+  }
+    
+ 
+}
 /* Creates a new kernel thread named NAME with the given initial
    PRIORITY, which executes FUNCTION passing AUX as the argument,
    and adds it to the ready queue.  Returns the thread identifier
@@ -559,7 +612,7 @@ schedule (void)
   ASSERT (intr_get_level () == INTR_OFF);
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));
-
+  
   if (cur != next)
     prev = switch_threads (cur, next);
   thread_schedule_tail (prev);

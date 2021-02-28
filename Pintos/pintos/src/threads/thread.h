@@ -100,6 +100,7 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+    int64_t wakeup;
   };
 
 /* If false (default), use round-robin scheduler.
@@ -109,16 +110,17 @@ extern bool thread_mlfqs;
 
 void thread_init (void);
 void thread_start (void);
-
+void blocking_thread(int64_t ticks,int64_t sofar);
 void thread_tick (void);
 void thread_print_stats (void);
-
+void timer_helper (struct thread *t);
 typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
 void thread_unblock (struct thread *);
-
+void thread_helper(int64_t ticks);
+void wakeup(void);
 struct thread *thread_current (void);
 tid_t thread_tid (void);
 const char *thread_name (void);
