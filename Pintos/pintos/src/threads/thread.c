@@ -73,6 +73,16 @@ static void schedule(void);
 void thread_schedule_tail(struct thread* prev);
 static tid_t allocate_tid(void);
 
+
+//added 3/5/2021 EK
+//compares two threads based off prio
+        bool comparePrio(struct list_elem* a, struct list_elem* b, void* aux) {
+    struct thread* tPointer1 = list_entry(a, struct thread, elem);
+    struct thread* tPointer2 = list_entry(b, struct thread, elem);
+
+    return tPointer1->priority > tPointer2->priority;
+}
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -273,6 +283,8 @@ thread_block(void)
 	schedule();
 }
 
+
+
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -296,14 +308,7 @@ thread_unblock(struct thread* t)
 	intr_set_level(old_level);
 }
 
-//added 3/5/2021 EK
-//compares two threads based off prio
-bool comparePrio(struct list_elem* a, struct list_elem* b, void* aux) {
-	struct thread* tPointer1 = list_entry(a, struct thread, elem);
-	struct thread* tPointer2 = list_entry(b, struct thread, elem);
 
-	return tPointer1->priority > tPointer2->priority;
-}
 
 /* Returns the name of the running thread. */
 const char*

@@ -37,6 +37,29 @@ static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
 
+//added 3/5/2021 EK
+// compares two threads based off of wakeup time, then prio
+bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
+    //create pointers for each given thread for comparison later
+    struct thread* tPointer1 = list_entry(a, struct thread, elem);
+    struct thread* tPointer2 = list_entry(b, struct thread, elem);
+
+    //first compare wakeup times
+    if (tPointer1->wakeup < tPointer1->wakeup) {
+        return true;
+    }
+        //then check if the wakeup times are equal
+    else if (tPointer1->wakeup == tPointer1->wakeup) {
+        //if they are, then comapare using priority
+        if (tPointer1->priority > tPointer2->priority) {
+            return true;
+        }
+    }
+    //if all tests fail, return false
+    return false;
+
+}
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -96,6 +119,8 @@ timer_elapsed (int64_t then)
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
 
+
+
 void
 timer_sleep (int64_t ticks) 
 {
@@ -114,28 +139,7 @@ timer_sleep (int64_t ticks)
     intr_set_level (old_level);
 }
 
-//added 3/5/2021 EK
-// compares two threads based off of wakeup time, then prio
-bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
-    //create pointers for each given thread for comparison later
-    struct thread* tPointer1 = list_entry(a, struct thread, elem);
-    struct thread* tPointer2 = list_entry(b, struct thread, elem);
 
-    //first compare wakeup times
-    if (tPointer1->wakeup < tPointer1->wakeup) {
-        return true;
-    }
-    //then check if the wakeup times are equal
-    else if (tPointer1->wakeup == tPointer1->wakeup) {
-        //if they are, then comapare using priority
-        if (tPointer1->priority > tPointer2->priority) {
-            return true;
-        }
-    }
-    //if all tests fail, return false
-    return false;
-
-}
 
 
 
