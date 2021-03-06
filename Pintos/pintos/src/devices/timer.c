@@ -37,29 +37,6 @@ static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
 
-//added 3/5/2021 EK
-// compares two threads based off of wakeup time, then prio
-bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
-    //create pointers for each given thread for comparison later
-    struct thread* tPointer1 = list_entry(a, struct thread, elem);
-    struct thread* tPointer2 = list_entry(b, struct thread, elem);
-
-    //first compare wakeup times
-    if (tPointer1->wakeup < tPointer1->wakeup) {
-        return true;
-    }
-        //then check if the wakeup times are equal
-    else if (tPointer1->wakeup == tPointer1->wakeup) {
-        //if they are, then comapare using priority
-        if (tPointer1->priority > tPointer2->priority) {
-            return true;
-        }
-    }
-    //if all tests fail, return false
-    return false;
-
-}
-
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -119,8 +96,6 @@ timer_elapsed (int64_t then)
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
 
-
-
 void
 timer_sleep (int64_t ticks) 
 {
@@ -139,42 +114,29 @@ timer_sleep (int64_t ticks)
     intr_set_level (old_level);
 }
 
+//added 3/5/2021 EK
+// compares two threads based off of wakeup time, then prio
+bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
+    //create pointers for each given thread for comparison later
+    struct thread* tPointer1 = list_entry(a, struct thread, elem);
+    struct thread* tPointer2 = list_entry(b, struct thread, elem);
 
+    //first compare wakeup times
+    if (tPointer1->wakeup < tPointer1->wakeup) {
+        return true;
+    }
+    //then check if the wakeup times are equal
+    else if (tPointer1->wakeup == tPointer1->wakeup) {
+        //if they are, then comapare using priority
+        if (tPointer1->priority > tPointer2->priority) {
+            return true;
+        }
+    }
+    //if all tests fail, return false
+    return false;
 
+}
 
-
-
-
-// void
-// timer_sleep (int64_t ticks) 
-// {
-//   int64_t start = timer_ticks ();
-//   ASSERT (intr_get_level () == INTR_ON);
-
-//   // while (timer_elapsed (start) < ticks) {
-//   //   thread_yield ();
-//   // } 
-    
-
-//   struct thread *cur = thread_current ();
-//   int64_t uptime = start + ticks;
-
-//   struct sleeping_threads *node = palloc_get_page(PAL_ZERO);
-//   if (node == NULL)
-//     PANIC ("Failed to allocate memory for a new blocked thread");
-
-//   node->threadID = cur;
-//   node->wakeup_time = uptime;
-
-
-//   enum intr_level old_level;
-//   old_level = intr_disable ();
-//   printf("entered\n");
-//   // if (check_idle(cur) == false) 
-//   add_toSleep(node);
-//   thread_block();
-//   intr_set_level (old_level);
-// }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
    turned on. */
@@ -202,7 +164,6 @@ timer_nsleep (int64_t ns)
 
 /* Busy-waits for approximately MS milliseconds.  Interrupts need
    not be turned on.
-
    Busy waiting wastes CPU cycles, and busy waiting with
    interrupts off for the interval between timer ticks or longer
    will cause timer ticks to be lost.  Thus, use timer_msleep()
@@ -215,7 +176,6 @@ timer_mdelay (int64_t ms)
 
 /* Sleeps for approximately US microseconds.  Interrupts need not
    be turned on.
-
    Busy waiting wastes CPU cycles, and busy waiting with
    interrupts off for the interval between timer ticks or longer
    will cause timer ticks to be lost.  Thus, use timer_usleep()
@@ -228,7 +188,6 @@ timer_udelay (int64_t us)
 
 /* Sleeps execution for approximately NS nanoseconds.  Interrupts
    need not be turned on.
-
    Busy waiting wastes CPU cycles, and busy waiting with
    interrupts off for the interval between timer ticks or longer
    will cause timer ticks to be lost.  Thus, use timer_nsleep()
@@ -263,6 +222,8 @@ timer_interrupt (struct intr_frame *args UNUSED)
         {
           e = list_remove(&t->elem);
           thread_unblock(t);
+          if(t->priority > thread_current()->priority)
+            intr_yield_on_return ();
         }
       else
         {
@@ -294,7 +255,6 @@ too_many_loops (unsigned loops)
 
 /* Iterates through a simple loop LOOPS times, for implementing
    brief delays.
-
    Marked NO_INLINE because code alignment can significantly
    affect timings, so that if this function was inlined
    differently in different places the results would be difficult
