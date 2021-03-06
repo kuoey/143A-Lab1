@@ -108,9 +108,33 @@ timer_sleep (int64_t ticks)
     cur->wakeup = uptime;
     enum intr_level old_level;
     old_level = intr_disable ();
-    list_push_back(&sleep_list, &cur->elem);
+    //list_push_back(&sleep_list, &cur->elem);
+    list_insert_ordered(&sleep_list, &cur->elem, compareSleep, 0);
     thread_block();
     intr_set_level (old_level);
+}
+
+//added 3/5/2021 EK
+// compares two threads based off of wakeup time, then prio
+bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
+    //create pointers for each given thread for comparison later
+    struct thread* tPointer1 = list_entry(a, struct thread, elem);
+    struct thread* tPointer2 = list_entry(b, struct thread, elem);
+
+    //first compare wakeup times
+    if (tPointer1->wakeup < tPointer1->wakeup) {
+        return true;
+    }
+    //then check if the wakeup times are equal
+    else if (tPointer1->wakeup == tPointer1->wakeup) {
+        //if they are, then comapare using priority
+        if (tPointer1->priority > tPointer2->priority) {
+            return true;
+        }
+    }
+    //if all tests fail, return false
+    return false;
+
 }
 
 
