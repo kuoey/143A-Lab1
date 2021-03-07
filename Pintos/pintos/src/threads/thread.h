@@ -152,6 +152,7 @@ struct thread *get_idle_thread(void);
 
 //MLFQ functions
 static int p = 17, q = 14, f = 0;
+//static int  f = 0;
 
 void init_f_value();
  int convert_to_fixed_point(int n);
