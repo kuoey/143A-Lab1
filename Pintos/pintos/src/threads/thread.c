@@ -92,7 +92,7 @@ static tid_t allocate_tid (void);
 
 
 /* function to initialize the value of f */
-        void init_f_value()
+void init_f_value()
 {
     int i = 1;
     f = 2;
@@ -103,21 +103,20 @@ static tid_t allocate_tid (void);
     }
 }
 
-
 /* function to convert n to fixed point */
-__inline__ int convert_to_fixed_point(int n)
+ int convert_to_fixed_point(int n)
 {
     return n * f;
 }
 
 /* function to convert x to integer (rounding toward zero) */
-__inline__ int covert_to_integer(int x)
+ int covert_to_integer(int x)
 {
     return x / f;
 }
 
 /* function to convert x to integer (rounding to nearest) */
-__inline__ int covert_to_integer_round(int x)
+ int covert_to_integer_round(int x)
 {
     if(x >= 0)
         return (x + f / 2) / f;
@@ -126,49 +125,49 @@ __inline__ int covert_to_integer_round(int x)
 }
 
 /* function to add two fixed point numbers x and y */
-__inline__ int add_fixed_point(int x, int y)
+ int add_fixed_point(int x, int y)
 {
     return x + y;
 }
 
 /* function to subtract fixed point numbers (y from x) */
-__inline__ int subtract_fixed_point(int x, int y)
+ int subtract_fixed_point(int x, int y)
 {
     return x - y;
 }
 
 /* function to add a fixed point number x and a integer n */
-__inline__ int add_fixed_and_integer(int x, int n)
+ int add_fixed_and_integer(int x, int n)
 {
     return x + (n * f);
 }
 
 /* function to subtract a interger n from a fixed point number x */
-__inline__ int sub_fixed_and_integer(int x, int n)
+ int sub_fixed_and_integer(int x, int n)
 {
     return x - (n * f);
 }
 
 /* function to multiply fixed point number x by y */
-__inline__ int multiply_fixed_point(int x, int y)
+ int multiply_fixed_point(int x, int y)
 {
     return ((int64_t) x) * y / f;
 }
 
 /* function to multiply fixed point number x by integer y */
-__inline__ int multiply_fixed_and_integer(int x, int n)
+ int multiply_fixed_and_integer(int x, int n)
 {
     return x * n;
 }
 
 /* function to divide fixed point number x by y */
-__inline__ int divide_fixed_point(int x, int y)
+ int divide_fixed_point(int x, int y)
 {
     return ((int64_t) x) * f / y;
 }
 
 /* function to divide fixed point number x by integer y */
-__inline__ int divide_fixed_and_integer(int x, int n)
+ int divide_fixed_and_integer(int x, int n)
 {
     return x / n;
 }
@@ -371,9 +370,11 @@ thread_unblock (struct thread *t)
 
 
   /* MODIFY PRIORITY: yield if higher priority thread is added */
+  /*
   if(old_level == INTR_ON)
     if(thread_current()->priority < t->priority)
       thread_yield();
+    */
 }
 
 /* Returns the name of the running thread. */
@@ -510,8 +511,10 @@ thread_set_priority (int new_priority)
 
     //yield if there exists a higher priority thread in ready list
     t = list_entry(list_max (&ready_list,thread_priority_cmp,NULL),struct thread,elem)->priority;
+   
     if(t > thread_current ()->priority)
       thread_yield();
+    
   }
 }
 
@@ -712,18 +715,19 @@ is_thread (struct thread *t)
 static void
 init_thread (struct thread *t, const char *name, int priority)
 {
-  ASSERT (t != NULL);
-  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
-  ASSERT (name != NULL);
 
-  memset (t, 0, sizeof *t);
-  t->status = THREAD_BLOCKED;
-  strlcpy (t->name, name, sizeof t->name);
-  t->stack = (uint8_t *) t + PGSIZE;
-  t->priority = priority;
-  t->magic = THREAD_MAGIC;
-  list_push_back (&all_list, &t->allelem);
+    ASSERT (t != NULL);
+    ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
+    ASSERT (name != NULL);
 
+    memset (t, 0, sizeof *t);
+    t->status = THREAD_BLOCKED;
+    strlcpy (t->name, name, sizeof t->name);
+    t->stack = (uint8_t *) t + PGSIZE;
+    t->priority = priority;
+    t->magic = THREAD_MAGIC;
+    list_push_back (&all_list, &t->allelem);
+  
   if(!thread_mlfqs)
   {
     /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
