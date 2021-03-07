@@ -106,116 +106,81 @@ void init_f_value()
 }
 
 /* function to convert n to fixed point */
-<<<<<<< Updated upstream
- int convert_to_fixed_point(int n)
-{
-=======
+
 int convert_to_fixed_point(int n) {
->>>>>>> Stashed changes
+
     return n * f;
 }
 
 /* function to convert x to integer (rounding toward zero) */
-<<<<<<< Updated upstream
- int covert_to_integer(int x)
-{
-=======
+
 int covert_to_integer(int x) {
->>>>>>> Stashed changes
+
     return x / f;
 }
 
 /* function to convert x to integer (rounding to nearest) */
-<<<<<<< Updated upstream
- int covert_to_integer_round(int x)
-{
-    if(x >= 0)
-=======
+
 int covert_to_integer_round(int x) {
     if (x >= 0)
->>>>>>> Stashed changes
+
         return (x + f / 2) / f;
     else
         return (x - f / 2) / f;
 }
 
 /* function to add two fixed point numbers x and y */
-<<<<<<< Updated upstream
- int add_fixed_point(int x, int y)
-{
-=======
+
 int add_fixed_point(int x, int y) {
->>>>>>> Stashed changes
+
     return x + y;
 }
 
 /* function to subtract fixed point numbers (y from x) */
-<<<<<<< Updated upstream
- int subtract_fixed_point(int x, int y)
-{
-=======
+
 int subtract_fixed_point(int x, int y) {
->>>>>>> Stashed changes
+
     return x - y;
 }
 
 /* function to add a fixed point number x and a integer n */
-<<<<<<< Updated upstream
- int add_fixed_and_integer(int x, int n)
-{
-=======
+
 int add_fixed_and_integer(int x, int n) {
->>>>>>> Stashed changes
     return x + (n * f);
 }
 
 /* function to subtract a interger n from a fixed point number x */
-<<<<<<< Updated upstream
- int sub_fixed_and_integer(int x, int n)
-{
-=======
+
 int sub_fixed_and_integer(int x, int n) {
->>>>>>> Stashed changes
+
     return x - (n * f);
 }
 
 /* function to multiply fixed point number x by y */
-<<<<<<< Updated upstream
- int multiply_fixed_point(int x, int y)
-{
-=======
+
 int multiply_fixed_point(int x, int y) {
->>>>>>> Stashed changes
+
     return ((int64_t) x) * y / f;
 }
 
 /* function to multiply fixed point number x by integer y */
-<<<<<<< Updated upstream
- int multiply_fixed_and_integer(int x, int n)
-{
-=======
+
 int multiply_fixed_and_integer(int x, int n) {
->>>>>>> Stashed changes
+
     return x * n;
 }
 
 /* function to divide fixed point number x by y */
-<<<<<<< Updated upstream
- int divide_fixed_point(int x, int y)
-{
-=======
+
 int divide_fixed_point(int x, int y) {
->>>>>>> Stashed changes
+
     return ((int64_t) x) * f / y;
 }
 
 /* function to divide fixed point number x by integer y */
-<<<<<<< Updated upstream
- int divide_fixed_and_integer(int x, int n)
-{
-=======
+
 int divide_fixed_and_integer(int x, int n) {
->>>>>>> Stashed changes
+
     return x / n;
 }
 
@@ -416,21 +381,14 @@ thread_unblock(struct thread *t) {
     intr_set_level(old_level);
 
 
-<<<<<<< Updated upstream
-  /* MODIFY PRIORITY: yield if higher priority thread is added */
-  /*
-  if(old_level == INTR_ON)
-    if(thread_current()->priority < t->priority)
-      thread_yield();
-    */
-=======
+
     //yielf if the priority of t is greater
     if (old_level == INTR_ON) {
         if (thread_current()->priority < t->priority) {
             thread_yield();
         }
     }
->>>>>>> Stashed changes
+
 }
 
 /* Returns the name of the running thread. */
@@ -573,16 +531,7 @@ thread_priority_donate(struct thread *target, int new_priority)
         }
     }
 
-<<<<<<< Updated upstream
-    //yield if there exists a higher priority thread in ready list
-    t = list_entry(list_max (&ready_list,thread_priority_cmp,NULL),struct thread,elem)->priority;
-   
-    if(t > thread_current ()->priority)
-      thread_yield();
-    
-  }
-=======
->>>>>>> Stashed changes
+
 }
 /* Returns the current thread's priority. */
 int
@@ -762,26 +711,7 @@ is_thread(struct thread *t) {
 /* Does basic initialization of T as a blocked thread named
    NAME. */
 static void
-<<<<<<< Updated upstream
-init_thread (struct thread *t, const char *name, int priority)
-{
 
-    ASSERT (t != NULL);
-    ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
-    ASSERT (name != NULL);
-
-    memset (t, 0, sizeof *t);
-    t->status = THREAD_BLOCKED;
-    strlcpy (t->name, name, sizeof t->name);
-    t->stack = (uint8_t *) t + PGSIZE;
-    t->priority = priority;
-    t->magic = THREAD_MAGIC;
-    list_push_back (&all_list, &t->allelem);
-  
-  if(!thread_mlfqs)
-  {
-    /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
-=======
 init_thread(struct thread *t, const char *name, int priority) {
 //    enum intr_level old_level;
     ASSERT(t != NULL);
@@ -792,7 +722,7 @@ init_thread(struct thread *t, const char *name, int priority) {
     t->status = THREAD_BLOCKED;
     strlcpy(t->name, name, sizeof t->name);
     t->stack = (uint8_t *) t + PGSIZE;
->>>>>>> Stashed changes
+
     t->priority = priority;
     t->magic = THREAD_MAGIC;
 //    old_level = intr_disable ();
