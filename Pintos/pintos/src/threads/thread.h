@@ -100,7 +100,16 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-    int64_t wakeup;
+
+    /* ADD PRIORITY DONATION: struct thread */
+    int old_priority;                   /* orignal priority for donation purposes */
+    struct list locks_held;             /* list of locks currently held by this thread */
+    struct lock *wait_on_lock;          /* stores the lock on which it waits */
+
+
+    /* ADD MLFQS: struct thread */
+    int nice;
+    int recent_cpu;
   };
 
 /* If false (default), use round-robin scheduler.
@@ -110,17 +119,16 @@ extern bool thread_mlfqs;
 
 void thread_init (void);
 void thread_start (void);
-void blocking_thread(int64_t ticks,int64_t sofar);
+
 void thread_tick (void);
 void thread_print_stats (void);
-void timer_helper (struct thread *t);
+
 typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
 void thread_unblock (struct thread *);
-void thread_helper(int64_t ticks);
-void wakeup(void);
+
 struct thread *thread_current (void);
 tid_t thread_tid (void);
 const char *thread_name (void);
@@ -139,5 +147,30 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+/* ADD MLFQ: function decralations */
+void calculate_recent_cpu(struct thread *t, void *aux UNUSED);
+void calculate_priority(struct thread *t, void *aux UNUSED);
+int get_ready_threads(void);
+int get_system_load_avg(void);
+void set_system_load_avg(int load);
+struct thread *get_idle_thread(void);
+
+//MLFQ functions
+static int p = 17, q = 14, f = 0;
+
+void init_f_value();
+ int convert_to_fixed_point(int n);
+ int covert_to_integer(int x);
+ int covert_to_integer_round(int x);
+ int add_fixed_point(int x, int y);
+ int subtract_fixed_point(int x, int y);
+ int add_fixed_and_integer(int x, int n);
+ int sub_fixed_and_integer(int x, int n);
+ int multiply_fixed_point(int x, int y);
+ int multiply_fixed_and_integer(int x, int n);
+ int divide_fixed_point(int x, int y);
+ int divide_fixed_and_integer(int x, int n);
+
 
 #endif /* threads/thread.h */
