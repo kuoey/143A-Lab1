@@ -1,0 +1,49 @@
+			+-------------------------+
+			|      CompSci 143A       |
+			| PROJECT 0: Getting Real |
+			|     DESIGN DOCUMENT     |
+			+-------------------------+
+				   
+---- AUTHOR ----
+
+>> Fill in your name and email address.
+
+Sydney Eads <eadss@uci.edu>
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, or notes for the
+>> TAs, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+I used this post on stackoverflow: https://stackoverflow.com/questions/632846/clearing-a-char-array-c to determine
+the best way to clear a char array so it can be used for new input.
+
+			     Booting Pintos
+			     ==============
+
+---- QUESTIONS ---- 
+>> Put the screenshots of Pintos running in src/p0.
+>> A1: Is there any particular issue that you would like us to know?
+	there were no issues.
+
+			     Kernel Monitor
+			     ==============
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+char cmdline[50] was used to store what the user typed in.
+int i was used to store characters into the correct index of cmdline array.
+char l was used to store what was returned from input_getc() (the character the user typed).
+---- ALGORITHMS ----
+>> C2: Explain how you read and write to the console for the kernel monitor.
+I used input_getc() to read each character inputted by the user and stored it into a char array. To write to the console
+I used printf().
+
+>> C3: Any additional enhancement you implement?
+I printed each char the user inputted to the screen so they could see what they typed.
