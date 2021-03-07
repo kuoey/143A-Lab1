@@ -6,13 +6,12 @@
 #include <stdint.h>
 
 /* States in a thread's life cycle. */
-enum thread_status
-  {
+enum thread_status {
     THREAD_RUNNING,     /* Running thread. */
     THREAD_READY,       /* Not running but ready to run. */
     THREAD_BLOCKED,     /* Waiting for an event to trigger. */
     THREAD_DYING        /* About to be destroyed. */
-  };
+};
 
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
@@ -74,8 +73,7 @@ typedef int tid_t;
    only because they are mutually exclusive: only a thread in the
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
-struct thread
-  {
+struct thread {
     /* Owned by thread.c. */
     tid_t tid;                          /* Thread identifier. */
     enum thread_status status;          /* Thread state. */
@@ -94,60 +92,79 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-    int64_t wakeup; //added this attribute
+    int64_t wakeup; //added this attribute //added
     /* ADD PRIORITY DONATION: struct thread */
-    int old_priority;                   /* orignal priority for donation purposes */
-    struct list locks_held;             /* list of locks currently held by this thread */
-    struct lock *wait_on_lock;          /* stores the lock on which it waits */
+    int old_priority;                   /* orignal priority for donation purposes */ //added
+    struct list locks_held;             /* list of locks currently held by this thread */ //added
+    struct lock *wait_on_lock;          /* stores the lock on which it waits */ //added
 
 
     /* ADD MLFQS: struct thread */
-    int nice;
-    int recent_cpu;
-  };
+    int nice; //added
+    int recent_cpu; //added
+};
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
-void thread_init (void);
-void thread_start (void);
+void thread_init(void);
 
-void thread_tick (void);
-void thread_print_stats (void);
+void thread_start(void);
 
-typedef void thread_func (void *aux);
-tid_t thread_create (const char *name, int priority, thread_func *, void *);
+void thread_tick(void);
 
-void thread_block (void);
-void thread_unblock (struct thread *);
+void thread_print_stats(void);
 
-struct thread *thread_current (void);
-tid_t thread_tid (void);
-const char *thread_name (void);
+typedef void thread_func(void *aux);
 
-void thread_exit (void) NO_RETURN;
-void thread_yield (void);
+tid_t thread_create(const char *name, int priority, thread_func *, void *);
+
+void thread_block(void);
+
+void thread_unblock(struct thread *);
+
+struct thread *thread_current(void);
+
+tid_t thread_tid(void);
+
+const char *thread_name(void);
+
+void thread_exit(void)
+
+NO_RETURN;
+
+void thread_yield(void);
 
 /* Performs some operation on thread t, given auxiliary data AUX. */
-typedef void thread_action_func (struct thread *t, void *aux);
-void thread_foreach (thread_action_func *, void *);
+typedef void thread_action_func(struct thread *t, void *aux);
 
-int thread_get_priority (void);
-void thread_set_priority (int);
+void thread_foreach(thread_action_func *, void *);
 
-int thread_get_nice (void);
-void thread_set_nice (int);
-int thread_get_recent_cpu (void);
-int thread_get_load_avg (void);
+int thread_get_priority(void);
+
+void thread_set_priority(int);
+
+int thread_get_nice(void);
+
+void thread_set_nice(int);
+
+int thread_get_recent_cpu(void);
+
+int thread_get_load_avg(void);
 
 /* ADD MLFQ: function decralations */
 void calculate_recent_cpu(struct thread *t, void *aux UNUSED);
+
 void calculate_priority(struct thread *t, void *aux UNUSED);
+
 int get_ready_threads(void);
+
 int get_system_load_avg(void);
+
 void set_system_load_avg(int load);
+
 struct thread *get_idle_thread(void);
 
 //MLFQ functions
@@ -155,17 +172,28 @@ static int p = 17, q = 14, f = 0;
 //static int  f = 0;
 
 void init_f_value();
- int convert_to_fixed_point(int n);
- int covert_to_integer(int x);
- int covert_to_integer_round(int x);
- int add_fixed_point(int x, int y);
- int subtract_fixed_point(int x, int y);
- int add_fixed_and_integer(int x, int n);
- int sub_fixed_and_integer(int x, int n);
- int multiply_fixed_point(int x, int y);
- int multiply_fixed_and_integer(int x, int n);
- int divide_fixed_point(int x, int y);
- int divide_fixed_and_integer(int x, int n);
+
+int convert_to_fixed_point(int n);
+
+int covert_to_integer(int x);
+
+int covert_to_integer_round(int x);
+
+int add_fixed_point(int x, int y);
+
+int subtract_fixed_point(int x, int y);
+
+int add_fixed_and_integer(int x, int n);
+
+int sub_fixed_and_integer(int x, int n);
+
+int multiply_fixed_point(int x, int y);
+
+int multiply_fixed_and_integer(int x, int n);
+
+int divide_fixed_point(int x, int y);
+
+int divide_fixed_and_integer(int x, int n);
 
 
 #endif /* threads/thread.h */

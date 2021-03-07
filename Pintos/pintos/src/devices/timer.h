@@ -31,17 +31,6 @@ void timer_ndelay (int64_t nanoseconds);
 
 void timer_print_stats (void);
 
-void init_f_value();
-__inline__ int convert_to_fixed_point(int n);
-__inline__ int covert_to_integer(int x);
-__inline__ int covert_to_integer_round(int x);
-__inline__ int add_fixed_point(int x, int y);
-__inline__ int subtract_fixed_point(int x, int y);
-__inline__ int add_fixed_and_integer(int x, int n);
-__inline__ int sub_fixed_and_integer(int x, int n);
-__inline__ int multiply_fixed_point(int x, int y);
-__inline__ int multiply_fixed_and_integer(int x, int n);
-__inline__ int divide_fixed_point(int x, int y);
-__inline__ int divide_fixed_and_integer(int x, int n);
+
 
 #endif /* devices/timer.h */
