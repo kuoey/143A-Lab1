@@ -27,6 +27,7 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+// (ADDED) Deal with this later (MLFQS)
 /* ADD MLFQS: 64 ready lists and system wide load avg*/
 static struct list mlfqs_list[64];
 static int system_load_avg = 0;
@@ -44,13 +45,20 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
+// (ADDED) comparitor for thread priorities note:should probably move to another file 
 /* ADD PRIORITY: list based function that compares the priority of two threads */
-static bool thread_priority_cmp(const struct list_elem *t1_,
-                             const struct list_elem *t2_, void *aux UNUSED)
-{
-  const struct thread *t1 = list_entry (t1_, struct thread, elem);
-  const struct thread *t2 = list_entry (t2_, struct thread, elem);
-  return t1->priority < t2->priority;
+//ACCOUNT FOR IN PART2 OF THE DESIGN DOC
+static bool threadPrioCompare(const struct list_elem *t1,
+                             const struct list_elem *t2, void *aux UNUSED)
+{ 
+  const struct thread *tPointer1 = list_entry (t1, struct thread, elem);
+  const struct thread *tPointer2 = list_entry (t2, struct thread, elem);
+  if(tPointer1->priority < tPointer2->priority){
+    return true;
+  }
+  else{
+    return false;
+  }
 }
 
 
@@ -90,33 +98,35 @@ void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
 
-
+int f = 0;
+// (ADDED) Deal with this later (MLFQS) LINES 98 - 176 
 /* function to initialize the value of f */
 void init_f_value()
 {
     int i = 1;
     f = 2;
-    while(i < q)
+    while(i < 14)
     {
         f = f*2;
         i++;
     }
 }
 
-/* function to convert n to fixed point */
- int convert_to_fixed_point(int n)
+//Convert n to fixed point:    n * f
+ int convertNtoFixedPoint(int n)
 {
     return n * f;
 }
 
-/* function to convert x to integer (rounding toward zero) */
- int covert_to_integer(int x)
+//Convert x to integer (rounding toward zero):    x / f
+ int convertXtoInt(int x)
 {
     return x / f;
 }
 
-/* function to convert x to integer (rounding to nearest) */
- int covert_to_integer_round(int x)
+//    (x + f / 2) / f if x >= 0,
+// (x - f / 2) / f if x <= 0.
+ int convertXtoIntRoundNear(int x)
 {
     if(x >= 0)
         return (x + f / 2) / f;
@@ -124,50 +134,50 @@ void init_f_value()
         return (x - f / 2) / f;
 }
 
-/* function to add two fixed point numbers x and y */
- int add_fixed_point(int x, int y)
+//x + y
+ int addXandY(int x, int y)
 {
     return x + y;
 }
 
-/* function to subtract fixed point numbers (y from x) */
- int subtract_fixed_point(int x, int y)
+// x - y
+ int subtractYfromX(int x, int y)
 {
     return x - y;
 }
 
-/* function to add a fixed point number x and a integer n */
- int add_fixed_and_integer(int x, int n)
+//Add x and n:    x + n * f
+ int addXandN(int x, int n)
 {
     return x + (n * f);
 }
 
-/* function to subtract a interger n from a fixed point number x */
- int sub_fixed_and_integer(int x, int n)
+//Subtract n from x:    x - n * f
+ int subNfromX(int x, int n)
 {
     return x - (n * f);
 }
 
-/* function to multiply fixed point number x by y */
- int multiply_fixed_point(int x, int y)
+//Multiply x by y:    ((int64_t) x) * y / f
+ int multXbyY(int x, int y)
 {
     return ((int64_t) x) * y / f;
 }
 
-/* function to multiply fixed point number x by integer y */
- int multiply_fixed_and_integer(int x, int n)
+//Multiply x by n:    x * n
+ int multXbyN(int x, int n)
 {
     return x * n;
 }
 
-/* function to divide fixed point number x by y */
- int divide_fixed_point(int x, int y)
+//Divide x by y:    ((int64_t) x) * f / y
+ int divXbyY(int x, int y)
 {
     return ((int64_t) x) * f / y;
 }
 
-/* function to divide fixed point number x by integer y */
- int divide_fixed_and_integer(int x, int n)
+//Divide x by n:    x / n
+ int divXbyN(int x, int n)
 {
     return x / n;
 }
@@ -190,14 +200,19 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&all_list);
 
+  // (ADDED) Initiallizes the ready list if mlfqs is false
+  // else initiallizes an mlfqs list (MLFQS STUFF lines 201-209)
+
   /* MODIFY MLFQS: initialize 64 ready lists and thread variables */
-  if(!thread_mlfqs)
-    list_init (&ready_list);
-  else
-  {
+  if(thread_mlfqs) {
     int i;
     for(i=0;i<64;i++)
       list_init (&mlfqs_list[i]);
+  }
+  else
+  {
+    list_init (&ready_list);
+    
   }
   init_f_value(); //initialize floating point arithmatic
   initial_thread->nice = 0; //nice value of first thread is zero
@@ -280,6 +295,8 @@ thread_create (const char *name, int priority,
   struct switch_entry_frame *ef;
   struct switch_threads_frame *sf;
   tid_t tid;
+
+  //(ADDED) Keeps track of current threads interrupt level
   enum intr_level old_level;
 
   ASSERT (function != NULL);
@@ -289,6 +306,7 @@ thread_create (const char *name, int priority,
   if (t == NULL)
     return TID_ERROR;
 
+  //(ADDED) Deal with later MLDQS
   /* MODIFY MLFQS: initialize thread attributes for subsequent threads */
   t->nice = thread_current()->nice; //get parent's nice value
   t->recent_cpu = thread_current()->recent_cpu; //get parent's recent_cpu value
@@ -297,6 +315,8 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
+  // (ADDED) Disables interrupts in current thread when accessing the stack frame 
+  // and stores previous interrupt level
   /* Prepare thread for first run by initializing its stack.
      Do this atomically so intermediate values for the 'stack' 
      member cannot be observed. */
@@ -317,11 +337,15 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
 
+  // (ADDED) After finishing access to stack frame, sets current thread's 
+  // interrupt level back to what it previously was
   intr_set_level (old_level);
 
   /* Add to run queue. */
   thread_unblock (t);
-  /* MODIFY PRIORITY: yield if higher priority thread is added */
+
+  //(ADDED) Yields the current thread if the new added thread 
+  // has a higher priority
   if(t->priority > thread_current()->priority)
     thread_yield();
 
@@ -360,15 +384,20 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
 
-  if(!thread_mlfqs)
-    list_push_back (&ready_list, &t->elem);
-  else
+  //(ADDED) decides to push thread into ready list or mlfqs list
+  // depending on mlfqs bool value
+  if(thread_mlfqs) {
     list_push_back (&mlfqs_list[t->priority], &t->elem);
+  }
+  else {
+    list_push_back (&ready_list, &t->elem);
+  }
+    
 
   t->status = THREAD_READY;
   intr_set_level (old_level);
 
-
+  //REMOVE LATER
   /* MODIFY PRIORITY: yield if higher priority thread is added */
   /*
   if(old_level == INTR_ON)
@@ -445,10 +474,15 @@ thread_yield (void)
 
   if (cur != idle_thread) 
   {
-    if(!thread_mlfqs)
-      list_push_back (&ready_list, &cur->elem);
-    else
+    //(ADDED) decides to push thread into ready list or mlfqs list
+    // depending on mlfqs bool value
+    if(thread_mlfqs) {
       list_push_back (&mlfqs_list[cur->priority], &cur->elem);
+    }
+    else {
+      list_push_back (&ready_list, &cur->elem);
+    }
+      
   }
 
   cur->status = THREAD_READY;
@@ -473,22 +507,26 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
+// (ADDED) Entire method was copied over
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
 {
-  /* ADD MLFQS: set priority should return without making changes */
-  if(thread_mlfqs)
-    return;
+  ASSERT(thread_mlfqs == false);
+  // /* ADD MLFQS: set priority should return without making changes */
+  // if(thread_mlfqs)
+  //   return;
 
   enum intr_level old_level;
-
+  //COME BACK HERE
   int t;
   old_level = intr_disable ();
-  if(new_priority <= PRI_MAX && new_priority >= PRI_MIN)
+  if(new_priority >= PRI_MIN && new_priority <= PRI_MAX) //REMOVE COMMENT: flipped this
   {
     /* MODIFY PRIORITY DONATION: thread_set_priority */
     //thread_set_priority is only called from within, make sure it doesn't disturb donations
+    // If the new priority is greater than the current thread's priority, just set 
+    // the new thread's 
     if(new_priority > thread_current ()->priority)
     {
       //if new priority is higher, dont worry about donations
@@ -510,7 +548,7 @@ thread_set_priority (int new_priority)
     intr_set_level (old_level);
 
     //yield if there exists a higher priority thread in ready list
-    t = list_entry(list_max (&ready_list,thread_priority_cmp,NULL),struct thread,elem)->priority;
+    t = list_entry(list_max (&ready_list,threadPrioCompare,NULL),struct thread,elem)->priority;
    
     if(t > thread_current ()->priority)
       thread_yield();
@@ -525,6 +563,8 @@ thread_get_priority (void)
   return thread_current ()->priority;
 }
 
+// (ADDED) entire method was copied 
+// DEAL THIS THIS LATER (MLFQS) lines 551-666
 /* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice) 
@@ -538,7 +578,7 @@ thread_set_nice (int nice)
   //calculate_recent_cpu(cur, 0);
 
   //update priority
-  cur->priority = PRI_MAX - covert_to_integer_round(cur->recent_cpu / 4) - (cur->nice * 2);
+  cur->priority = PRI_MAX - convertXtoIntRoundNear(cur->recent_cpu / 4) - (cur->nice * 2);
 
   if(cur->priority > PRI_MAX)
     cur->priority = PRI_MAX;
@@ -567,8 +607,8 @@ int
 thread_get_load_avg (void) 
 {
   /* MODIFY MLFQS: thread get load avg */
-  int i = multiply_fixed_and_integer(system_load_avg,100);
-  return covert_to_integer_round(i);
+  int i = multXbyN(system_load_avg,100);
+  return convertXtoIntRoundNear(i);
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
@@ -576,8 +616,8 @@ int
 thread_get_recent_cpu (void) 
 {
   /* MODIFY MLFQS: thread get recent cpu */
-  int i = multiply_fixed_and_integer(thread_current()->recent_cpu,100);
-  return covert_to_integer_round(i);
+  int i = multXbyN(thread_current()->recent_cpu,100);
+  return convertXtoIntRoundNear(i);
 }
 
 /* MODIFY MLFQS: function to calculate recent cpu */
@@ -585,17 +625,17 @@ void calculate_recent_cpu(struct thread *t, void *aux UNUSED)
 {
   int i,j;
   i = 2 * system_load_avg;
-  j = add_fixed_and_integer(i,1);
-  i = divide_fixed_point(i,j);
-  j = multiply_fixed_point(i,t->recent_cpu);
-  t->recent_cpu = add_fixed_and_integer(j,t->nice);  
+  j = addXandN(i,1);
+  i = divXbyY(i,j);
+  j = multXbyY(i,t->recent_cpu);
+  t->recent_cpu = addXandN(j,t->nice);  
 }
 
 /* MODIFY MLFQS: function to calculate priority */
 void calculate_priority(struct thread *t, void *aux UNUSED)
 {
   int old_p = t->priority;
-  t->priority = PRI_MAX - covert_to_integer_round(t->recent_cpu / 4) - (t->nice * 2);
+  t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
   
   if(t->priority > PRI_MAX)
     t->priority = PRI_MAX;
@@ -716,18 +756,20 @@ static void
 init_thread (struct thread *t, const char *name, int priority)
 {
 
-    ASSERT (t != NULL);
-    ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
-    ASSERT (name != NULL);
+  ASSERT (t != NULL);
+  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
+  ASSERT (name != NULL);
 
-    memset (t, 0, sizeof *t);
-    t->status = THREAD_BLOCKED;
-    strlcpy (t->name, name, sizeof t->name);
-    t->stack = (uint8_t *) t + PGSIZE;
-    t->priority = priority;
-    t->magic = THREAD_MAGIC;
-    list_push_back (&all_list, &t->allelem);
+  memset (t, 0, sizeof *t);
+  t->status = THREAD_BLOCKED;
+  strlcpy (t->name, name, sizeof t->name);
+  t->stack = (uint8_t *) t + PGSIZE;
+  t->priority = priority;
+  t->magic = THREAD_MAGIC;
+  list_push_back (&all_list, &t->allelem);
   
+  //(ADDED) deals with prio donation, else uses mlfqs 
+  // if mlfqs bool value is true (lines 755-777)
   if(!thread_mlfqs)
   {
     /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
@@ -737,7 +779,7 @@ init_thread (struct thread *t, const char *name, int priority)
   else
   {
     /* MODIFY MLFQS: initialize priority of new thread */
-    t->priority = PRI_MAX - covert_to_integer_round(t->recent_cpu / 4) - (t->nice * 2);
+    t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
 
     if(t->priority > PRI_MAX)
       t->priority = PRI_MAX;
@@ -746,6 +788,9 @@ init_thread (struct thread *t, const char *name, int priority)
       t->priority = PRI_MIN;
   }
 
+  //initializes a threads lock list as well as the 
+  // lock the thread is waiting for, which should initially be
+  // NONE
   list_init (&t->locks_held);
   t->wait_on_lock = NULL;
 }
@@ -769,21 +814,11 @@ alloc_frame (struct thread *t, size_t size)
    will be in the run queue.)  If the run queue is empty, return
    idle_thread. */
 static struct thread *
+//ACCOUNT FOR IN PART 2 OF DESIGN DOC line 838-840
 next_thread_to_run (void) 
 {
-  if(!thread_mlfqs)
-  {
-    if (list_empty (&ready_list))
-      return idle_thread;
-    else
-    {
-      /* MODIFY PRIORITY: choose highest priority thread to run from ready list */
-      struct list_elem *e = list_max (&ready_list,thread_priority_cmp,NULL);
-      list_remove(e);
-      return list_entry(e,struct thread,elem);
-    }
-  }
-  else
+  //(ADDED) deals with prio donation or MLFQS
+  if(thread_mlfqs)
   {
     int i=63;
     while(i>=0 && list_empty(&mlfqs_list[i]))
@@ -792,6 +827,26 @@ next_thread_to_run (void)
       return list_entry(list_pop_front (&mlfqs_list[i]), struct thread, elem);
     else
       return idle_thread;
+  }
+  // MLFQS STUFF
+  else
+  {
+        //if statement was given code
+
+    if (list_empty (&ready_list))
+      return idle_thread;
+    else
+    {
+      //thread with the highest prio should be the next to run
+    
+
+      struct list_elem *temp = list_max (&ready_list,threadPrioCompare,NULL); 
+      list_remove(temp);
+      return list_entry(temp,struct thread,elem);
+
+    }
+
+
   }
 }
 

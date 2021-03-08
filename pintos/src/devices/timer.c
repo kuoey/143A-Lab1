@@ -34,15 +34,16 @@ static void real_time_delay (int64_t num, int32_t denom);
 
 
 
-/* ADD ALARM: new list of sleeping threads */
+//list for sleeping threads
+//ACCOUNT FOR IN PART 1 OF DESIGN DOC
 static struct list sleep_list;
 
 
 /* ADD ALARM: lock for accessing sleep_list */
 //static struct lock sleep_list_lock;
-
-int constant1, constant2; //move computation outside timer_interrupt
-
+//ACCOUNT FOR IN PART 3 OF DESIGN DOC -?? COME BACK TO CONFIRM
+int constant1, constant2; //"move computation outside timer_interrupt"- her
+//added ^^
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -50,12 +51,13 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
-
+  //added: initalize the sleep list and lock 
   list_init (&sleep_list);
   //lock_init (&sleep_list_lock);
 
-  constant1 = divide_fixed_and_integer(convert_to_fixed_point(59),60);
-  constant2 = divide_fixed_and_integer(convert_to_fixed_point(1),60);
+  //todo MLFQS
+  constant1 = divXbyN(convertNtoFixedPoint(59),60);
+  constant2 = divXbyN(convertNtoFixedPoint(1),60);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -103,25 +105,24 @@ timer_elapsed (int64_t then)
   return timer_ticks () - then;
 }
 
-
+//ACCOUNT FOR IN PART 1 OF DESIGN DOC
 void
-timer_sleep (int64_t ticks) 
+timer_sleep (int64_t ticks) //pass in how long we want each thread to sleep for
 {
     ASSERT (intr_get_level () == INTR_ON);
 
     struct thread *cur = thread_current ();
-    int64_t uptime = timer_ticks () + ticks;
 
-
-    cur->wakeup = uptime;
+    cur->wakeup = timer_ticks () + ticks; //save the wakeup time of each thread as a struct attribute
     enum intr_level old_level;
     old_level = intr_disable ();
-    //list_push_back(&sleep_list, &cur->elem);
-    list_insert_ordered(&sleep_list, &cur->elem, compareSleep, 0);
-    thread_block();
-    intr_set_level (old_level);
+
+    list_insert_ordered(&sleep_list, &cur->elem, compareSleep, 0); //add each thread as a list elem to the sleep_list based on wakeup time
+    thread_block(); //block the thread 
+    intr_set_level (old_level); //set interrupts back to orginal status
 }
 
+//ACCOUNT FOR IN PART 1 OF DESIGN DOC
 //added 3/5/2021 EK
 // compares two threads based off of wakeup time, then prio
 bool compareSleep(struct list_elem* a, struct list_elem* b, void* aux) {
@@ -227,25 +228,25 @@ timer_interrupt (struct intr_frame *args UNUSED)
         {
           e = list_remove(&t->elem);
           thread_unblock(t);
-          //if(t->priority > thread_current()->priority)
-          //  intr_yield_on_return ();
         }
       else
         {
           e = list_next(e);
         }
     }
+  //added: MLFQS
+  //ACCOUNT FOR IN PART 3 OF DESIGN DOC
   if(thread_mlfqs)
   {
     //increment recent cpu at each tick
     if(thread_current() != get_idle_thread())
-      thread_current()->recent_cpu = add_fixed_and_integer(thread_current()->recent_cpu,1);
+      thread_current()->recent_cpu = addXandN(thread_current()->recent_cpu,1);
 
     //update recent cpu and load avg every second
     if(ticks % TIMER_FREQ == 0)
     {
-       i = multiply_fixed_point(constant1,get_system_load_avg());
-       j = multiply_fixed_and_integer(constant2,get_ready_threads());
+       i = multXbyY(constant1,get_system_load_avg());
+       j = multXbyN(constant2,get_ready_threads());
        set_system_load_avg(i + j);
 
        thread_foreach (calculate_recent_cpu, 0);
@@ -258,7 +259,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
       intr_yield_on_return ();
     }
   }
-
   thread_tick ();
   
 }

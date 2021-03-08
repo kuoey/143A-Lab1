@@ -17,10 +17,10 @@ Executing 'mlfqs-nice-10':
 (mlfqs-nice-10) Thread 2 received 491 ticks.
 (mlfqs-nice-10) Thread 3 received 405 ticks.
 (mlfqs-nice-10) Thread 4 received 316 ticks.
-(mlfqs-nice-10) Thread 5 received 229 ticks.
-(mlfqs-nice-10) Thread 6 received 157 ticks.
-(mlfqs-nice-10) Thread 7 received 92 ticks.
-(mlfqs-nice-10) Thread 8 received 40 ticks.
+(mlfqs-nice-10) Thread 5 received 228 ticks.
+(mlfqs-nice-10) Thread 6 received 156 ticks.
+(mlfqs-nice-10) Thread 7 received 93 ticks.
+(mlfqs-nice-10) Thread 8 received 41 ticks.
 (mlfqs-nice-10) Thread 9 received 8 ticks.
 (mlfqs-nice-10) end
 Execution of 'mlfqs-nice-10' complete.

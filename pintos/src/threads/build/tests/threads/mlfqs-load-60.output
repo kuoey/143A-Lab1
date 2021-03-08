@@ -72,39 +72,39 @@ Executing 'mlfqs-load-60':
 (mlfqs-load-60) After 116 seconds, load average=14.93.
 (mlfqs-load-60) After 118 seconds, load average=14.44.
 (mlfqs-load-60) After 120 seconds, load average=13.96.
-(mlfqs-load-60) After 122 seconds, load average=13.55.
-(mlfqs-load-60) After 124 seconds, load average=13.10.
-(mlfqs-load-60) After 126 seconds, load average=12.66.
-(mlfqs-load-60) After 128 seconds, load average=12.24.
-(mlfqs-load-60) After 130 seconds, load average=11.84.
-(mlfqs-load-60) After 132 seconds, load average=11.44.
-(mlfqs-load-60) After 134 seconds, load average=11.06.
-(mlfqs-load-60) After 136 seconds, load average=10.70.
-(mlfqs-load-60) After 138 seconds, load average=10.34.
-(mlfqs-load-60) After 140 seconds, load average=10.00.
-(mlfqs-load-60) After 142 seconds, load average=9.67.
-(mlfqs-load-60) After 144 seconds, load average=9.35.
-(mlfqs-load-60) After 146 seconds, load average=9.04.
-(mlfqs-load-60) After 148 seconds, load average=8.74.
-(mlfqs-load-60) After 150 seconds, load average=8.45.
-(mlfqs-load-60) After 152 seconds, load average=8.17.
-(mlfqs-load-60) After 154 seconds, load average=7.90.
-(mlfqs-load-60) After 156 seconds, load average=7.63.
-(mlfqs-load-60) After 158 seconds, load average=7.38.
+(mlfqs-load-60) After 122 seconds, load average=13.56.
+(mlfqs-load-60) After 124 seconds, load average=13.11.
+(mlfqs-load-60) After 126 seconds, load average=12.68.
+(mlfqs-load-60) After 128 seconds, load average=12.26.
+(mlfqs-load-60) After 130 seconds, load average=11.85.
+(mlfqs-load-60) After 132 seconds, load average=11.46.
+(mlfqs-load-60) After 134 seconds, load average=11.08.
+(mlfqs-load-60) After 136 seconds, load average=10.71.
+(mlfqs-load-60) After 138 seconds, load average=10.35.
+(mlfqs-load-60) After 140 seconds, load average=10.01.
+(mlfqs-load-60) After 142 seconds, load average=9.68.
+(mlfqs-load-60) After 144 seconds, load average=9.36.
+(mlfqs-load-60) After 146 seconds, load average=9.05.
+(mlfqs-load-60) After 148 seconds, load average=8.75.
+(mlfqs-load-60) After 150 seconds, load average=8.46.
+(mlfqs-load-60) After 152 seconds, load average=8.18.
+(mlfqs-load-60) After 154 seconds, load average=7.91.
+(mlfqs-load-60) After 156 seconds, load average=7.64.
+(mlfqs-load-60) After 158 seconds, load average=7.39.
 (mlfqs-load-60) After 160 seconds, load average=7.14.
-(mlfqs-load-60) After 162 seconds, load average=6.90.
-(mlfqs-load-60) After 164 seconds, load average=6.67.
-(mlfqs-load-60) After 166 seconds, load average=6.45.
-(mlfqs-load-60) After 168 seconds, load average=6.23.
-(mlfqs-load-60) After 170 seconds, load average=6.03.
-(mlfqs-load-60) After 172 seconds, load average=5.83.
-(mlfqs-load-60) After 174 seconds, load average=5.63.
+(mlfqs-load-60) After 162 seconds, load average=6.91.
+(mlfqs-load-60) After 164 seconds, load average=6.68.
+(mlfqs-load-60) After 166 seconds, load average=6.46.
+(mlfqs-load-60) After 168 seconds, load average=6.24.
+(mlfqs-load-60) After 170 seconds, load average=6.04.
+(mlfqs-load-60) After 172 seconds, load average=5.84.
+(mlfqs-load-60) After 174 seconds, load average=5.64.
 (mlfqs-load-60) After 176 seconds, load average=5.45.
 (mlfqs-load-60) After 178 seconds, load average=5.27.
 (mlfqs-load-60) end
 Execution of 'mlfqs-load-60' complete.
 Timer: 18837 ticks
-Thread: 12079 idle ticks, 6761 kernel ticks, 0 user ticks
+Thread: 12078 idle ticks, 6762 kernel ticks, 0 user ticks
 Console: 5364 characters output
 Keyboard: 0 keys pressed
 Powering off...

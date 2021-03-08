@@ -94,13 +94,16 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-    int64_t wakeup; //added this attribute
+    //ACCOUNT FOR IN PART 1 OF DESIGN DOC
+    int64_t wakeup; //added this attribute (USED IN timer.c)
+
+    //(ADDED) added new vars to deal with prio donation
     /* ADD PRIORITY DONATION: struct thread */
     int old_priority;                   /* orignal priority for donation purposes */
     struct list locks_held;             /* list of locks currently held by this thread */
     struct lock *wait_on_lock;          /* stores the lock on which it waits */
 
-
+   //(ADDED) MLFQS STUFF
     /* ADD MLFQS: struct thread */
     int nice;
     int recent_cpu;
@@ -142,6 +145,8 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+
+//(ADDED) MLFQS STUFF lines 150 - 172
 /* ADD MLFQ: function decralations */
 void calculate_recent_cpu(struct thread *t, void *aux UNUSED);
 void calculate_priority(struct thread *t, void *aux UNUSED);
@@ -151,21 +156,20 @@ void set_system_load_avg(int load);
 struct thread *get_idle_thread(void);
 
 //MLFQ functions
-static int p = 17, q = 14, f = 0;
-//static int  f = 0;
+//static int q = 14, f = 0;
 
 void init_f_value();
- int convert_to_fixed_point(int n);
- int covert_to_integer(int x);
- int covert_to_integer_round(int x);
- int add_fixed_point(int x, int y);
- int subtract_fixed_point(int x, int y);
- int add_fixed_and_integer(int x, int n);
- int sub_fixed_and_integer(int x, int n);
- int multiply_fixed_point(int x, int y);
- int multiply_fixed_and_integer(int x, int n);
- int divide_fixed_point(int x, int y);
- int divide_fixed_and_integer(int x, int n);
+ int convertNtoFixedPoint(int n);
+ int convertXtoInt(int x);
+ int convertXtoIntRoundNear(int x);
+ int addXandY(int x, int y);
+ int subtractYfromX(int x, int y);
+ int addXandN(int x, int n);
+ int subNfromX(int x, int n);
+ int multXbyY(int x, int y);
+ int multXbyN(int x, int n);
+ int divXbyY(int x, int y);
+ int divXbyN(int x, int n);
 
 
 #endif /* threads/thread.h */
