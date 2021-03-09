@@ -42,8 +42,7 @@ static struct list sleep_list;
 /* ADD ALARM: lock for accessing sleep_list */
 //static struct lock sleep_list_lock;
 //ACCOUNT FOR IN PART 3 OF DESIGN DOC -?? COME BACK TO CONFIRM
-int constant1, constant2; //"move computation outside timer_interrupt"- her
-//added ^^
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -55,9 +54,6 @@ timer_init (void)
   list_init (&sleep_list);
   //lock_init (&sleep_list_lock);
 
-  //todo MLFQS
-  constant1 = divXbyN(convertNtoFixedPoint(59),60);
-  constant2 = divXbyN(convertNtoFixedPoint(1),60);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -239,26 +235,26 @@ timer_interrupt (struct intr_frame *args UNUSED)
   if(thread_mlfqs)
   {
     //increment recent cpu at each tick
-    if(thread_current() != get_idle_thread())
+    if(thread_current() != get_idle_thread()){
       thread_current()->recent_cpu = addXandN(thread_current()->recent_cpu,1);
+    }
 
     //update recent cpu and load avg every second
     if(ticks % TIMER_FREQ == 0)
     {
-       setLoadAv(multXbyY(constant1,getLoadAv()) + multXbyN(constant2,get_ready_threads()));
-
-       thread_foreach (calculate_recent_cpu, 0);
+      //load_avg = (59/60)*load_avg + (1/60)*ready_threads
+      setLoadAv(multXbyY(divXbyN(convertNtoFixedPoint(59),60),getLoadAv()) + multXbyN(divXbyN(convertNtoFixedPoint(1),60),get_ready_threads()));
+      thread_foreach (calculate_recent_cpu, 0);
     }
 
-    //calculate priority every 4th tick
-     if(ticks % 2 == 0) //--- responsible for test mlfqs-fair-20 passing, change to 2 org = 4
+    //"recalculated once every fourth clock tick"
+     if(ticks % 4 == 0) //--- responsible for test mlfqs-fair-20 passing
      {
        thread_foreach (calcPrio, 0);
        intr_yield_on_return ();
      }
   }
-  thread_tick ();
-  
+  thread_tick (); 
 }
 /* Returns true if LOOPS iterations waits for more than one timer
    tick, otherwise false. */

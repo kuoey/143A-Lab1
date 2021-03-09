@@ -394,17 +394,8 @@ thread_unblock (struct thread *t)
     list_push_back (&ready_list, &t->elem);
   }
     
-
   t->status = THREAD_READY;
   intr_set_level (old_level);
-
-  //REMOVE LATER
-  /* MODIFY PRIORITY: yield if higher priority thread is added */
-  /*
-  if(old_level == INTR_ON)
-    if(thread_current()->priority < t->priority)
-      thread_yield();
-    */
 }
 
 /* Returns the name of the running thread. */
@@ -485,7 +476,6 @@ thread_yield (void)
     }
       
   }
-
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -520,7 +510,6 @@ thread_set_priority (int new_priority)
 
   enum intr_level old_level;
   //COME BACK HERE
-  int t;
   old_level = intr_disable ();
   if(new_priority >= PRI_MIN && new_priority <= PRI_MAX) //REMOVE COMMENT: flipped this
   {
@@ -549,9 +538,9 @@ thread_set_priority (int new_priority)
     intr_set_level (old_level);
 
     //yield if there exists a higher priority thread in ready list
-    t = list_entry(list_max (&ready_list,threadPrioCompare,NULL),struct thread,elem)->priority;
+    int max_prio = list_entry(list_max (&ready_list,threadPrioCompare,NULL),struct thread,elem)->priority;
    
-    if(t > thread_current ()->priority)
+    if(max_prio > thread_current ()->priority)
       thread_yield();
     
   }
@@ -594,13 +583,6 @@ thread_set_nice (int nice)
       thread_yield();  
     }
   }
-  /* changed it to ^^
-  //int i = 63;
-  while(i>=0 && list_empty(&mlfqs_list[i]))
-    i--;
-  if(cur->priority < i)
-    thread_yield();
-  */
 }
 
 /* Returns the current thread's nice value. */
@@ -644,8 +626,8 @@ void calculate_recent_cpu(struct thread *t, void *aux UNUSED)
 /* MODIFY MLFQS: function to calculate priority */
 void calcPrio(struct thread *t, void *aux UNUSED)
 {
-  int old_p = t->priority;
-  
+  int oldPrio = t->priority;
+  //priority = PRI_MAX - (recent_cpu / 4) - (nice * 2)
   t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
   
   if(t->priority > PRI_MAX)
@@ -656,7 +638,7 @@ void calcPrio(struct thread *t, void *aux UNUSED)
     t->priority = PRI_MIN;
   }
 
-  if(old_p != t->priority && t->status == THREAD_READY)
+  if(oldPrio != t->priority && t->status == THREAD_READY)
   { 
      list_remove(&t->elem);
      list_push_back (&mlfqs_list[t->priority], &t->elem);
@@ -667,17 +649,18 @@ void calcPrio(struct thread *t, void *aux UNUSED)
 /* MODIFY MLFQS: function to get ready threads */
 int get_ready_threads(void)
 {
-  int i,ready_threads = 0;
+  int i;
+  int all_ready = 0;
 
   for(i=0;i<64;i++)
   {
-     ready_threads += list_size(&mlfqs_list[i]);
+     all_ready += list_size(&mlfqs_list[i]);
   } 
   if(running_thread () != idle_thread){
-     ready_threads += 1;
+     all_ready++;
   }
 
-  return ready_threads;
+  return all_ready;
 }
 
 /* MODIFY MLFQS: function to get system load avg */
@@ -782,24 +765,25 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
   
-  //(ADDED) deals with prio donation, else uses mlfqs 
-  // if mlfqs bool value is true (lines 755-777)
-  if(!thread_mlfqs)
+  //(ADDED) if mlfqs set priority of new thread else reset prio donation
+  if(thread_mlfqs)
   {
-    /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
-    t->priority = priority;
-    t->old_priority = priority;
+      /* MODIFY MLFQS: initialize priority of new thread */
+    t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
+
+    if(t->priority > PRI_MAX){
+      t->priority = PRI_MAX;
+    }
+    else if(t->priority < PRI_MIN){
+      t->priority = PRI_MIN;
+    }
   }
   else
   {
-    /* MODIFY MLFQS: initialize priority of new thread */
-    t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
+      /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
+    t->priority = priority;
+    t->old_priority = priority;
 
-    if(t->priority > PRI_MAX)
-      t->priority = PRI_MAX;
-
-    if(t->priority < PRI_MIN)
-      t->priority = PRI_MIN;
   }
 
   //initializes a threads lock list as well as the 
@@ -834,33 +818,36 @@ next_thread_to_run (void)
   //(ADDED) deals with prio donation or MLFQS
   if(thread_mlfqs)
   {
+    int notEmpty_flag = 0;
     int i=63;
-    while(i>=0 && list_empty(&mlfqs_list[i]))
-      i--;
-    if(i>=0)
-      return list_entry(list_pop_front (&mlfqs_list[i]), struct thread, elem);
-    else
+    while(i>=0){
+      if(list_empty(&mlfqs_list[i])){
+         i--;
+      }
+      else{
+        notEmpty_flag = 1;
+        break;
+      }
+    }  
+    if(notEmpty_flag == 1){
+      return list_entry(list_pop_front (&mlfqs_list[i]), struct thread, elem); 
+    }  
+    else{ //mlfqs list was empty
       return idle_thread;
+    }
+
   }
-  // MLFQS STUFF
   else
   {
-        //if statement was given code
-
     if (list_empty (&ready_list))
       return idle_thread;
     else
     {
       //thread with the highest prio should be the next to run
-    
-
       struct list_elem *temp = list_max (&ready_list,threadPrioCompare,NULL); 
       list_remove(temp);
       return list_entry(temp,struct thread,elem);
-
     }
-
-
   }
 }
 

@@ -252,7 +252,7 @@ lock_acquire (struct lock *lock)
         lock_copy = l_holder->wait_on_lock;
     } 
   }
-  
+
   thread_current()->wait_on_lock = lock; //I'm waiting on this lock
   intr_set_level (old_level);
 

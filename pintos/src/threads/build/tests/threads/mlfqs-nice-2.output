@@ -5,19 +5,19 @@ Kernel command line: -q -mlfqs run mlfqs-nice-2
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
-Calibrating timer...  153,400 loops/s.
+Calibrating timer...  204,600 loops/s.
 Boot complete.
 Executing 'mlfqs-nice-2':
 (mlfqs-nice-2) begin
 (mlfqs-nice-2) Starting 2 threads...
-(mlfqs-nice-2) Starting threads took 9 ticks.
+(mlfqs-nice-2) Starting threads took 8 ticks.
 (mlfqs-nice-2) Sleeping 40 seconds to let threads run, please wait...
-(mlfqs-nice-2) Thread 0 received 1930 ticks.
-(mlfqs-nice-2) Thread 1 received 1071 ticks.
+(mlfqs-nice-2) Thread 0 received 1916 ticks.
+(mlfqs-nice-2) Thread 1 received 1084 ticks.
 (mlfqs-nice-2) end
 Execution of 'mlfqs-nice-2' complete.
-Timer: 4065 ticks
-Thread: 993 idle ticks, 3075 kernel ticks, 0 user ticks
+Timer: 4063 ticks
+Thread: 992 idle ticks, 3074 kernel ticks, 0 user ticks
 Console: 629 characters output
 Keyboard: 0 keys pressed
 Powering off...
