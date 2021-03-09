@@ -5,7 +5,7 @@ Kernel command line: -q -mlfqs run mlfqs-block
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
-Calibrating timer...  204,600 loops/s.
+Calibrating timer...  153,400 loops/s.
 Boot complete.
 Executing 'mlfqs-block':
 (mlfqs-block) begin
@@ -19,8 +19,8 @@ Executing 'mlfqs-block':
 (mlfqs-block) Block thread should have already acquired lock.
 (mlfqs-block) end
 Execution of 'mlfqs-block' complete.
-Timer: 3103 ticks
-Thread: 527 idle ticks, 2578 kernel ticks, 0 user ticks
+Timer: 3105 ticks
+Thread: 528 idle ticks, 2579 kernel ticks, 0 user ticks
 Console: 775 characters output
 Keyboard: 0 keys pressed
 Powering off...

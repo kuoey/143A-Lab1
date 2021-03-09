@@ -149,16 +149,17 @@ int thread_get_load_avg (void);
 //(ADDED) MLFQS STUFF lines 150 - 172
 /* ADD MLFQ: function decralations */
 void calculate_recent_cpu(struct thread *t, void *aux UNUSED);
-void calculate_priority(struct thread *t, void *aux UNUSED);
+void calcPrio(struct thread *t, void *aux UNUSED);
 int get_ready_threads(void);
-int get_system_load_avg(void);
-void set_system_load_avg(int load);
+int getLoadAv(void);
+void setLoadAv(int load);
 struct thread *get_idle_thread(void);
 
 //MLFQ functions
 //static int q = 14, f = 0;
 
-void init_f_value();
+//void init_f_value();
+ int power(int base, int pow);
  int convertNtoFixedPoint(int n);
  int convertXtoInt(int x);
  int convertXtoIntRoundNear(int x);

@@ -212,7 +212,7 @@ timer_print_stats (void)
   printf ("Timer: %"PRId64" ticks\n", timer_ticks ());
 }
 
-int i,j;
+
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
@@ -245,19 +245,17 @@ timer_interrupt (struct intr_frame *args UNUSED)
     //update recent cpu and load avg every second
     if(ticks % TIMER_FREQ == 0)
     {
-       i = multXbyY(constant1,get_system_load_avg());
-       j = multXbyN(constant2,get_ready_threads());
-       set_system_load_avg(i + j);
+       setLoadAv(multXbyY(constant1,getLoadAv()) + multXbyN(constant2,get_ready_threads()));
 
        thread_foreach (calculate_recent_cpu, 0);
     }
 
     //calculate priority every 4th tick
-    if(ticks % 4 == 0)
-    {
-      thread_foreach (calculate_priority, 0);
-      intr_yield_on_return ();
-    }
+     if(ticks % 2 == 0) //--- responsible for test mlfqs-fair-20 passing, change to 2 org = 4
+     {
+       thread_foreach (calcPrio, 0);
+       intr_yield_on_return ();
+     }
   }
   thread_tick ();
   

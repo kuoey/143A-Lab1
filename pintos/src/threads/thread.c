@@ -98,18 +98,18 @@ void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
 
-int f = 0;
-// (ADDED) Deal with this later (MLFQS) LINES 98 - 176 
-/* function to initialize the value of f */
-void init_f_value()
+int f;
+// (ADDED) Deal with this later (MLFQS) LINES 98 - 176
+//function to replace power bc for some reason we cant
+//import math??
+int power(int base, int pow)
 {
-    int i = 1;
-    f = 2;
-    while(i < 14)
-    {
-        f = f*2;
-        i++;
-    }
+  if (pow == 0)
+    return 1;
+  else if (pow % 2 == 0)
+    return power(base, pow / 2) * power(base, pow / 2);
+  else
+    return base * power(base, pow / 2) * power(base, pow / 2);
 }
 
 //Convert n to fixed point:    n * f
@@ -214,7 +214,8 @@ thread_init (void)
     list_init (&ready_list);
     
   }
-  init_f_value(); //initialize floating point arithmatic
+  //init_f_value(); //initialize floating point arithmatic
+  f = power(2,14);
   initial_thread->nice = 0; //nice value of first thread is zero
   initial_thread->recent_cpu = 0; //recent_cpu of first thread is zero
 
@@ -570,28 +571,36 @@ void
 thread_set_nice (int nice) 
 {
   /* MODIFY MLFQS: set nice */
-  struct thread *cur = thread_current();
+  struct thread *curr_thread = thread_current();
   if(nice >= -20 && nice <= 20)
-    cur->nice = nice;
-
-  //update recent_cpu ?
-  //calculate_recent_cpu(cur, 0);
-
+  {
+    curr_thread->nice = nice;
+  }
   //update priority
-  cur->priority = PRI_MAX - convertXtoIntRoundNear(cur->recent_cpu / 4) - (cur->nice * 2);
+  curr_thread->priority = PRI_MAX - convertXtoIntRoundNear(curr_thread->recent_cpu / 4) - (curr_thread->nice * 2);
 
-  if(cur->priority > PRI_MAX)
-    cur->priority = PRI_MAX;
-
-  if(cur->priority < PRI_MIN)
-    cur->priority = PRI_MIN;
-
+  if(curr_thread->priority > PRI_MAX)
+  {
+    curr_thread->priority = PRI_MAX;
+  }
+  else if(curr_thread->priority < PRI_MIN)
+  {
+    curr_thread->priority = PRI_MIN;
+  }
   //yield if higher priority thread is waiting in ready lists
-  int i = 63;
+  int i = 0;
+  for(i = 0; i < 64; i++){
+    if(list_empty(&mlfqs_list[i]) && curr_thread->priority > i){
+      thread_yield();  
+    }
+  }
+  /* changed it to ^^
+  //int i = 63;
   while(i>=0 && list_empty(&mlfqs_list[i]))
     i--;
   if(cur->priority < i)
     thread_yield();
+  */
 }
 
 /* Returns the current thread's nice value. */
@@ -623,25 +632,29 @@ thread_get_recent_cpu (void)
 /* MODIFY MLFQS: function to calculate recent cpu */
 void calculate_recent_cpu(struct thread *t, void *aux UNUSED)
 {
-  int i,j;
-  i = 2 * system_load_avg;
-  j = addXandN(i,1);
-  i = divXbyY(i,j);
-  j = multXbyY(i,t->recent_cpu);
-  t->recent_cpu = addXandN(j,t->nice);  
+  //recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
+  int doub_load = 2 * system_load_avg;
+  int denom = addXandN(doub_load, 1);
+  int first_part = divXbyY(doub_load,denom);
+  first_part = multXbyY(first_part,t->recent_cpu);
+  t->recent_cpu = addXandN(first_part,t->nice);
+ 
 }
 
 /* MODIFY MLFQS: function to calculate priority */
-void calculate_priority(struct thread *t, void *aux UNUSED)
+void calcPrio(struct thread *t, void *aux UNUSED)
 {
   int old_p = t->priority;
+  
   t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
   
   if(t->priority > PRI_MAX)
+  {
     t->priority = PRI_MAX;
-
-  if(t->priority < PRI_MIN)
+  }
+  else if(t->priority < PRI_MIN){
     t->priority = PRI_MIN;
+  }
 
   if(old_p != t->priority && t->status == THREAD_READY)
   { 
@@ -660,20 +673,21 @@ int get_ready_threads(void)
   {
      ready_threads += list_size(&mlfqs_list[i]);
   } 
-  if(running_thread () != idle_thread)
+  if(running_thread () != idle_thread){
      ready_threads += 1;
+  }
 
   return ready_threads;
 }
 
 /* MODIFY MLFQS: function to get system load avg */
-int get_system_load_avg(void)
+int getLoadAv(void)
 {
   return system_load_avg;
 }
 
 /* MODIFY MLFQS: function to set system load avg */
-void set_system_load_avg(int load)
+void setLoadAv(int load)
 {
   system_load_avg = load;
 }
