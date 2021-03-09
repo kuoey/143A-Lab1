@@ -28,6 +28,7 @@
 #include <string.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "threads/fixed-point.h"
 
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
@@ -423,7 +424,6 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
   if (!list_empty (&cond->waiters)) 
   {
     //(ADDED) wakes max prio thread
-    /* MODIFY PRIORITY: max priority blocked thread on cond should be woken up */
     //sema_up (&list_entry (list_pop_front (&cond->waiters), struct semaphore_elem, elem)->semaphore);
     max_cond_waiter = list_max (&cond->waiters,semaPrioCompare,NULL);
     list_remove(max_cond_waiter);

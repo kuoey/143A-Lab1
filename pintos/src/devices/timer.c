@@ -9,6 +9,7 @@
 #include "threads/thread.h"
 #include "threads/palloc.h"
 #include "threads/malloc.h"
+#include "threads/fixed-point.h"
   
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -113,7 +114,7 @@ timer_sleep (int64_t ticks) //pass in how long we want each thread to sleep for
     enum intr_level old_level;
     old_level = intr_disable ();
 
-    list_insert_ordered(&sleep_list, &cur->elem, compareSleep, 0); //add each thread as a list elem to the sleep_list based on wakeup time
+    list_insert_ordered(&sleep_list, &cur->elem, compareSleep, NULL); //add each thread as a list elem to the sleep_list based on wakeup time
     thread_block(); //block the thread 
     intr_set_level (old_level); //set interrupts back to orginal status
 }

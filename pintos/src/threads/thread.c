@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/fixed-point.h"
 
 //#include "threads/fixed-point.h"
 
@@ -98,89 +99,11 @@ void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
 
-int f;
+
 // (ADDED) Deal with this later (MLFQS) LINES 98 - 176
 //function to replace power bc for some reason we cant
 //import math??
-int power(int base, int pow)
-{
-  if (pow == 0)
-    return 1;
-  else if (pow % 2 == 0)
-    return power(base, pow / 2) * power(base, pow / 2);
-  else
-    return base * power(base, pow / 2) * power(base, pow / 2);
-}
 
-//Convert n to fixed point:    n * f
- int convertNtoFixedPoint(int n)
-{
-    return n * f;
-}
-
-//Convert x to integer (rounding toward zero):    x / f
- int convertXtoInt(int x)
-{
-    return x / f;
-}
-
-//    (x + f / 2) / f if x >= 0,
-// (x - f / 2) / f if x <= 0.
- int convertXtoIntRoundNear(int x)
-{
-    if(x >= 0)
-        return (x + f / 2) / f;
-    else
-        return (x - f / 2) / f;
-}
-
-//x + y
- int addXandY(int x, int y)
-{
-    return x + y;
-}
-
-// x - y
- int subtractYfromX(int x, int y)
-{
-    return x - y;
-}
-
-//Add x and n:    x + n * f
- int addXandN(int x, int n)
-{
-    return x + (n * f);
-}
-
-//Subtract n from x:    x - n * f
- int subNfromX(int x, int n)
-{
-    return x - (n * f);
-}
-
-//Multiply x by y:    ((int64_t) x) * y / f
- int multXbyY(int x, int y)
-{
-    return ((int64_t) x) * y / f;
-}
-
-//Multiply x by n:    x * n
- int multXbyN(int x, int n)
-{
-    return x * n;
-}
-
-//Divide x by y:    ((int64_t) x) * f / y
- int divXbyY(int x, int y)
-{
-    return ((int64_t) x) * f / y;
-}
-
-//Divide x by n:    x / n
- int divXbyN(int x, int n)
-{
-    return x / n;
-}
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -203,7 +126,6 @@ thread_init (void)
   // (ADDED) Initiallizes the ready list if mlfqs is false
   // else initiallizes an mlfqs list (MLFQS STUFF lines 201-209)
 
-  /* MODIFY MLFQS: initialize 64 ready lists and thread variables */
   if(thread_mlfqs) {
     int i;
     for(i=0;i<64;i++)
@@ -308,7 +230,6 @@ thread_create (const char *name, int priority,
     return TID_ERROR;
 
   //(ADDED) Deal with later MLDQS
-  /* MODIFY MLFQS: initialize thread attributes for subsequent threads */
   t->nice = thread_current()->nice; //get parent's nice value
   t->recent_cpu = thread_current()->recent_cpu; //get parent's recent_cpu value
 
@@ -513,7 +434,6 @@ thread_set_priority (int new_priority)
   old_level = intr_disable ();
   if(new_priority >= PRI_MIN && new_priority <= PRI_MAX) //REMOVE COMMENT: flipped this
   {
-    /* MODIFY PRIORITY DONATION: thread_set_priority */
     //thread_set_priority is only called from within, make sure it doesn't disturb donations
     // If the new priority is greater than the current thread's priority, just set 
     // the new thread's 
@@ -559,7 +479,6 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice) 
 {
-  /* MODIFY MLFQS: set nice */
   struct thread *curr_thread = thread_current();
   if(nice >= -20 && nice <= 20)
   {
@@ -589,7 +508,6 @@ thread_set_nice (int nice)
 int
 thread_get_nice (void) 
 {
-  /* MODIFY MLFQS: get nice */
   return thread_current()->nice;
 }
 
@@ -597,7 +515,6 @@ thread_get_nice (void)
 int
 thread_get_load_avg (void) 
 {
-  /* MODIFY MLFQS: thread get load avg */
   int i = multXbyN(system_load_avg,100);
   return convertXtoIntRoundNear(i);
 }
@@ -606,12 +523,10 @@ thread_get_load_avg (void)
 int
 thread_get_recent_cpu (void) 
 {
-  /* MODIFY MLFQS: thread get recent cpu */
   int i = multXbyN(thread_current()->recent_cpu,100);
   return convertXtoIntRoundNear(i);
 }
 
-/* MODIFY MLFQS: function to calculate recent cpu */
 void calculate_recent_cpu(struct thread *t, void *aux UNUSED)
 {
   //recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
@@ -623,7 +538,6 @@ void calculate_recent_cpu(struct thread *t, void *aux UNUSED)
  
 }
 
-/* MODIFY MLFQS: function to calculate priority */
 void calcPrio(struct thread *t, void *aux UNUSED)
 {
   int oldPrio = t->priority;
@@ -646,7 +560,6 @@ void calcPrio(struct thread *t, void *aux UNUSED)
   
 }
 
-/* MODIFY MLFQS: function to get ready threads */
 int get_ready_threads(void)
 {
   int i;
@@ -663,13 +576,11 @@ int get_ready_threads(void)
   return all_ready;
 }
 
-/* MODIFY MLFQS: function to get system load avg */
 int getLoadAv(void)
 {
   return system_load_avg;
 }
 
-/* MODIFY MLFQS: function to set system load avg */
 void setLoadAv(int load)
 {
   system_load_avg = load;
@@ -768,7 +679,6 @@ init_thread (struct thread *t, const char *name, int priority)
   //(ADDED) if mlfqs set priority of new thread else reset prio donation
   if(thread_mlfqs)
   {
-      /* MODIFY MLFQS: initialize priority of new thread */
     t->priority = PRI_MAX - convertXtoIntRoundNear(t->recent_cpu / 4) - (t->nice * 2);
 
     if(t->priority > PRI_MAX){
@@ -780,7 +690,6 @@ init_thread (struct thread *t, const char *name, int priority)
   }
   else
   {
-      /* MODIFY PRIORITY DONATION: initialize the new attributes of struct thread */
     t->priority = priority;
     t->old_priority = priority;
 

@@ -4,4 +4,4 @@ devices/timer.o: ../../devices/timer.c ../../devices/timer.h \
  ../../lib/inttypes.h ../../lib/stdio.h ../../lib/stdarg.h \
  ../../lib/kernel/stdio.h ../../devices/pit.h ../../threads/interrupt.h \
  ../../threads/synch.h ../../threads/thread.h ../../threads/palloc.h \
- ../../threads/malloc.h
+ ../../threads/malloc.h ../../threads/fixed-point.h
